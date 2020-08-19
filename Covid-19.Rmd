@@ -10,8 +10,7 @@ editor_options:
 #############
 # LIBRARIES #
 #############
-
-```{r}
+```{r setup, include=FALSE}
 #General-purpose data wrangling
 library(tidyverse)  
 
@@ -46,8 +45,9 @@ library(maps)
 library(shinydashboard)
 library(png)
 library(sunburstR)
+```
 
-
+```{r}
 ####################
 # DATA PREPARATION #
 ####################
