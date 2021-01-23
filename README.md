@@ -1,3 +1,5 @@
+<img src="Pictures/Coronavirus.png" title="book" width="150" />Pictures/Coronavirus.png
+
 # Covid-19-real-time-analytics-R-Shiny
 Real-time analysis and visualization of worldwide Covid-19 cases trends. Plots, maps, linear graphs and etc. are included.
 ## QR Code for web shinyApp
