@@ -1,7 +1,6 @@
 ---
-title: "ANT-Covid"
-author: "Makivic, Timis, Wieser, Adanc"
-date: "21 1 2021"
+title: "Covid"
+author: "Makivic"
 ---
 
 ```{r setup}
