@@ -1,7 +1,8 @@
- <img src="Pictures/Coronavirus.png" title="SARS-CoV2" width="250" />
+ #<img src="Pictures/Coronavirus.png" title="SARS-CoV2" width="250" />
 
 # Covid-19-real-time-analytics-R-Shiny
 Real-time analysis and visualization of worldwide Covid-19 cases trends. Plots, maps, linear graphs and etc. are included.
+
 ## QR Code for web shinyApp
 <img src="Pictures/QR.png" title="QR" width="300" />
 
