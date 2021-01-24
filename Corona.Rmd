@@ -1,6 +1,6 @@
 ---
-title: "Covid"
-author: "Makivic"
+title: "Covid ShinyApp"
+author: "Makivic Bojan, MMSc"
 ---
 
 ```{r setup}
@@ -320,49 +320,41 @@ ui <- shinyUI(dashboardPage(
       ),
       tabItem(
         tabName = "TotalCases",
-        titlePanel(absolutePanel(
-          top = 180, left = 640, h1("Cases of Covid-19")
-        )), absolutePanel(
-          top = 60,
-          left = 700,
-          width = 200,
-          selectInput("parM", "Select variable:", choices = colnames(dfnoco[c(3, 6:10, 13, 14)]))
-        ),
         fluidPage(
-          theme = shinytheme("cerulean"),
           fluidRow(
-            infoBox("Total cases world wide", df$TotalCases[df$Country == "World"]),
-            icon = icon("chart-line")
-          ),
-          absolutePanel(
-            top = 5,
-            infoBoxOutput("infoBox")
-          )
-        ),
-        fluidRow(
-          absolutePanel(
-            top = 60,
-            left = 1040,
-            draggable = FALSE,
-            selectInput("var", "Select continent:",
-              choices =
-                Co[df$Country[1:6]]
+            column(6,
+              theme = shinytheme("cerulean"),
+              infoBox("Total cases world wide", df$TotalCases[df$Country == "World"], width = "100%"),
+              icon = icon("chart-line"),
+              infoBoxOutput("infoBox")
             ),
-            gaugeOutput("table")
-          )
-        ),
-        fluidPage(
-          
-            
-          
+            column(
+              3,
+              selectInput("var", "Select continent:",
+                choices =
+                  Co[df$Country[1:6]]
+              )
+            ),
+            column(3, gaugeOutput("table"), style = "height:20px")
+          ),
+
+          fluidRow(
+            column(
+              6,
+              selectInput("parM", "Select variable:", choices = colnames(dfnoco[c(3, 6:10, 13, 14)]))
+            )
+          ),
+          fluidRow(column(
+            12,
+
             plotlyOutput("geo", width = "100%", height = "100%")
-          
+          ))
         )
       ),
       tabItem(
         tabName = "TotalCases2",
-       
-      fluidPage(
+
+        fluidPage(
           tmapOutput("geo2", width = "100%", height = 550)
         )
       ),
@@ -372,7 +364,6 @@ ui <- shinyUI(dashboardPage(
         icon = icon("chart-line"),
         titlePanel(absolutePanel(top = 150, left = 630, h1("Total deaths by country"))),
         fluidPage(
-          
           highchartOutput("plotDist2")
         )
       ),
@@ -380,13 +371,16 @@ ui <- shinyUI(dashboardPage(
         tabName = "Boxplot",
         icon = icon("box"),
         titlePanel(absolutePanel(top = 500, left = 330, h1("Boxplot"))),
-        absolutePanel(top = 500,
+        absolutePanel(
+          top = 500,
           left = 1000,
           width = 200,
-          selectInput("Box_par", "Select variable:", choices = colnames(dfnoco[c(3, 6:10, 13, 14)]))),
-        fluidPage(
-        highchartOutput("Boxplot1"))
+          selectInput("Box_par", "Select variable:", choices = colnames(dfnoco[c(3, 6:10, 13, 14)]))
         ),
+        fluidPage(
+          highchartOutput("Boxplot1")
+        )
+      ),
       tabItem(
         tabName = "SunBurst",
         absolutePanel(
@@ -515,18 +509,36 @@ server <- function(input, output, session) {
         yaxis = list(title = "New Cases")
       )
   })
-  
-  output$Boxplot1 <- renderHighchart({
-     dat <- data_to_boxplot(df_con, get(input$Box_par), Continent, add_outliers = TRUE)
 
-highchart() %>%
-hc_xAxis(type = "category") %>%
-hc_add_series_list(dat)
+  output$Boxplot1 <- renderHighchart({
+    dat <- data_to_boxplot(df_con, get(input$Box_par), Continent, add_outliers = FALSE)
+
+    highchart() %>%
+      hc_xAxis(type = "category") %>%
+      hc_add_series_list(dat)
   })
-  
+
   output$plotDist2 <- renderHighchart({
-    hchart(df %>% filter(Country != "" & Country != "World" & Country != "Europe" & Country != "Asia" & Country != "North America" & Country != "Africa" & Country != "South America" & Country != "Oceania" & TotalDeaths != 0), "scatter", hcaes(Country, TotalDeaths, z = Country, color = TotalDeaths)) 
+    hchart(df %>% filter(Country != "" & Country != "World" & Country != "Europe" & Country != "Asia" & Country != "North America" & Country != "Africa" & Country != "South America" & Country != "Oceania" & TotalDeaths != 0), "scatter", hcaes(Country, TotalDeaths, z = Country, color = TotalDeaths))
   })
+
+  output$geo2 <-
+    renderTmap({
+      tm_shape(data_full_states) + tm_polygons(
+        "Pop_density",
+        palette = "YlGnBu", breaks = c(0, 20, 50, 100, 150, 200, 400, 600, 800, 1000, 2000, 5000, 10000, 20000, 30000), contrast = 1.1, title = "Population density",
+        popup.vars = c(
+          "Population density/km2 :" = "Pop_density",
+          "Total recovered :" = "TotalRecovered",
+          "New recovered :" = "NewRecovered",
+          "Active cases : " = "ActiveCases",
+          "Serious cases :" = "Serious"
+        ), id = "NAME"
+      ) +
+        tm_scale_bar(breaks = c(0, 25, 50, 75, 100), text.size = 1 / 2) +
+        tm_text("countryCode", size = 0.6) +
+        tmap_mode("view") + tm_view(set.view = c(7, 51, 2))
+    })
 
   output$geo <-
     renderPlotly({
@@ -551,24 +563,7 @@ hc_add_series_list(dat)
           geo = map_options
         )
     })
-  
-  output$geo2 <-
-    renderTmap({
-      tm_shape(data_full_states) +  tm_polygons(
-        "Pop_density",
-        palette = "YlGnBu", breaks = c(0,20,50,100,150,200,400,600,800,1000,2000,5000,10000,20000,30000), contrast = 2, title = "Population density",
-        popup.vars=c(
-          "Population density/km2 :" = "Pop_density",
-          "Total recovered :" = "TotalRecovered",
-          "New recovered :" = "NewRecovered",
-          "Active cases : " = "ActiveCases",
-          "Serious cases :" = "Serious"), id ="NAME"
-      ) +
-        tm_scale_bar(breaks = c(0, 25, 50, 75, 100), text.size = 1 / 2) +
-        tm_text("countryCode", size = 0.6)  + 
-        tmap_mode("view") + tm_view(set.view = c(7, 51, 2))
-        })
-  
+
   output$table <- renderGauge({
     gauge(
       input$var,
