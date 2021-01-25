@@ -294,16 +294,13 @@ ui <- shinyUI(dashboardPage(
     tabItems(
       tabItem(
         tabName = "MainTab",
-
-        titlePanel("PLEASE CHOOSE THE DASHBOARD FROM SIDEBAR MENU
-                                       "),
-        titlePanel(absolutePanel(
-          top = 550,
-          left = 240,
-          h3("")
-        )),
-        plotOutput(outputId = "png")
-      ),
+        fluidPage(
+          fluidRow(
+            column(10, titlePanel("PLEASE CHOOSE THE DASHBOARD FROM SIDEBAR MENU")))
+        ,
+        fluidRow(column(12,plotOutput(outputId = "png"))),
+        fluidRow(column(6,titlePanel( h3("Credit: Bojan Makivic, MMSc")), style = "height:0px"))
+      )),
       tabItem(
         tabName = "NewCases",
         titlePanel(absolutePanel(
