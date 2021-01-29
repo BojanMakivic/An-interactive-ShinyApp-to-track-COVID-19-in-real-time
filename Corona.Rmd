@@ -448,16 +448,21 @@ ui <- shinyUI(dashboardPage(
       ),
       tabItem(
         tabName = "Boxplot",
-        icon = icon("box"),
-        titlePanel(absolutePanel(top = 500, left = 330, h1("Boxplot"))),
-        absolutePanel(
-          top = 500,
-          left = 1000,
-          width = 200,
-          selectInput("Box_par", "Select variable:", choices = colnames(dfnoco[c(3, 6:10, 13, 14)]))
-        ),
         fluidPage(
-          highchartOutput("Boxplot1")
+          fluidRow(
+            column(12,
+              align = "center",
+              icon = icon("box"),
+              titlePanel(h1("Boxplot"))
+            )
+          ),
+          fluidRow(column(9), column(
+            3,
+            selectInput("Box_par", "Select variable:", choices = colnames(dfnoco[c(3, 6:10, 13, 14)]))
+          )),
+          fluidPage(
+            column(12, highchartOutput("Boxplot1"), style = "height:140px")
+          )
         )
       ),
       tabItem(
