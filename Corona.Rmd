@@ -329,7 +329,7 @@ x <-
 ## Define UI 
 ```{r, echo=TRUE}
 ui <- shinyUI(dashboardPage(
-  dashboardHeader(title = "Covid-19"),
+  dashboardHeader(title = "SARS-CoV 2"),
   dashboardSidebar(
     sidebarMenu(
       menuItem(
@@ -377,24 +377,25 @@ ui <- shinyUI(dashboardPage(
       tabItem(
         tabName = "MainTab",
         fluidPage(
+          theme = shinytheme("flatly"),
           fluidRow(
-            column(10, titlePanel("PLEASE CHOOSE THE DASHBOARD FROM SIDEBAR MENU")))
-        ,
-        fluidRow(column(12,plotOutput(outputId = "png"))),
-        fluidRow(column(6,titlePanel( h3("Credit: Bojan Makivic, MMSc")), style = "height:0px"))
-      )),
+            column(10, titlePanel("PLEASE CHOOSE THE DASHBOARD FROM SIDEBAR MENU"), align = "center")
+          ),
+          fluidRow(column(12, plotOutput(outputId = "png"))),
+          fluidRow(column(6, titlePanel(h3("Credit: Bojan Makivic, MMSc")), style = "height:0px"))
+        )
+      ),
       tabItem(
         tabName = "NewCases",
-        titlePanel(absolutePanel(
-          top = 40,
-          left = 500,
-          h1("New cases of Covid-19 for the current day")
-        )),
-        absolutePanel(
-          top = 120,
-          left = 210,
-          draggable = TRUE,
-          mainPanel(plotlyOutput("plotDist"))
+        fluidPage(
+          fluidRow(column(12,
+            h1("New cases of Covid-19 for the current day"),
+            style = "height:130px", align = "center"
+          )),
+          fluidRow(column(
+            12,
+            highchartOutput("plotDist")
+          ))
         )
       ),
       tabItem(
@@ -420,7 +421,7 @@ ui <- shinyUI(dashboardPage(
           fluidRow(
             column(
               6,
-              selectInput("parM", "Select variable:", choices = colnames(dfnoco[c(3, 6:10, 13, 14)]))
+              selectInput("par_M", "Select variable:", choices = colnames(dfnoco[c(3, 6:10, 13, 14)]))
             )
           ),
           fluidRow(column(
@@ -434,16 +435,23 @@ ui <- shinyUI(dashboardPage(
         tabName = "TotalCases2",
 
         fluidPage(
-          tmapOutput("geo2", width = "100%", height = 550)
+          tmapOutput("geo2", width = "100%", height = 600)
         )
       ),
       tabItem(
         tabName = "TotalDeaths",
-        infoBox("Total deaths world", df$TotalDeaths[df$Country == "World"]),
-        icon = icon("chart-line"),
-        titlePanel(absolutePanel(top = 150, left = 630, h1("Total deaths by country"))),
         fluidPage(
-          highchartOutput("plotDist2")
+          fluidRow(
+            column(4,
+              style = "height:150px",
+              infoBox("Total deaths world", df$TotalDeaths[df$Country == "World"], width = "100%"),
+              icon = icon("chart-line")
+            ),
+            column(6, h1("Total deaths by country"))
+          ),
+          fluidPage(
+            highchartOutput("plotDist2", height = 445)
+          )
         )
       ),
       tabItem(
@@ -497,69 +505,57 @@ ui <- shinyUI(dashboardPage(
       ),
       tabItem(
         tabName = "DailyDeaths",
-        titlePanel(h1("Daily deaths by Covid-19", align = "center")),
-        absolutePanel(
-          top = 150,
-          left = 210,
-          draggable = FALSE,
-          mainPanel(plotlyOutput("plotDD"))
-        )
+        fluidPage(fluidRow(
+          column(
+            12,
+            titlePanel(h1("Daily deaths by Covid-19", align = "center"))
+          ),
+          column(3, selectInput("var_dd", "Select variable:", choices = colnames(df_url2[c(0:3)]))),
+          fluidPage(highchartOutput("plotDD"), width = "100%")
+        ))
       ),
       tabItem(
         tabName = "Dens",
-        titlePanel(h1("Regression analysis", align = "center")),
-        absolutePanel(
-          top = 125,
-          left = 250,
-          width = 150,
-          numericInput("num",
-            "x-axis cut off:",
-            max = 900000000,
-            min = 0,
-            value = 300000000
+        fluidPage(
+          fluidRow(column(
+            12,
+            titlePanel(h1("Regression analysis", align = "center"))
+          )),
+          fluidRow(
+            column(
+              3,
+              numericInput("num",
+                "x-axis cut off:",
+                max = 900000000,
+                min = 0,
+                value = 300000000
+              ),
+              numericInput(
+                "num2",
+                "y-axis cut off:",
+                max(90000000),
+                min = 1,
+                value = 300000000
+              )
+            ),
+            column(3,
+              offset = 1,
+              selectInput("con", "Select continent:",
+                choices =
+                  join2$Continent[join2$Continent != "0"]
+              ),
+              selectInput("response", "Select response variable:", choices = colnames(join2[c(3:13, 15:16, 18:22, 2)]))
+            ),
+            column(3,
+              offset = 1,
+              selectInput("paraM1", "Select predictor variable:", choices = colnames(join2[c(2:13, 15:16, 18:22)])),
+              selectInput("paraM2", "Select 2nd predictor variable:", choices = colnames(join2[c(2:13, 15:16, 18:22)]))
+            ),
+            fluidRow(column(12,
+              plotlyOutput("plotDens"),
+              style = "height:10px"
+            ))
           )
-        ),
-        absolutePanel(
-          top = 125,
-          left = 405,
-          width = 150,
-          height = 10,
-          numericInput(
-            "num2",
-            "y-axis cut off:",
-            max(90000000),
-            min = 1,
-            value = 300000000
-          )
-        ),
-        absolutePanel(
-          top = 130,
-          left = 560,
-          width = 200,
-          selectInput("con", "Select continent:",
-            choices =
-              join2$Continent
-          )
-        ),
-        absolutePanel(
-          top = 130,
-          left = 765,
-          width = 200,
-          selectInput("paraM", "Select predictor variable:", choices = colnames(join2[c(4:14, 20, 21, 24:28, 3)]))
-        ),
-        absolutePanel(
-          top = 130,
-          left = 970,
-          width = 200,
-          selectInput("response", "Select response variable:", choices = colnames(join2[c(3:12)]))
-        ),
-        absolutePanel(
-          top = 190,
-          left = 220,
-          width = 1700,
-          height = 500,
-          draggable = FALSE,
-          mainPanel(plotlyOutput("plotDens"))
         )
       )
     )
@@ -578,24 +574,16 @@ server <- function(input, output, session) {
     plot.new()
     grid::grid.raster(pic)
   })
-  output$plotDist <- renderPlotly({
-    plot_ly(
-      y = ~y,
-      x = ~x,
-      height = 560,
-      width = 1140,
-      text = y,
-      textposition = "outside"
-    ) %>%
-      layout(
-        title = "",
-        xaxis = list(title = "Country"),
-        yaxis = list(title = "New Cases")
-      )
+  output$plotDist <- renderHighchart({
+    join2 %>%
+      hchart(
+        "column", hcaes(x = Country, y = NewCases, color = Country)
+      ) %>%
+      hc_xAxis(categories = join2$Country, decreasing = TRUE)
   })
 
   output$Boxplot1 <- renderHighchart({
-    dat <- data_to_boxplot(df_con, get(input$Box_par), Continent, add_outliers = FALSE)
+    dat <- data_to_boxplot(df_con, get(input$Box_par), Continent, add_outliers = FALSE, name = paste(input$Box_par))
 
     highchart() %>%
       hc_xAxis(type = "category") %>%
@@ -603,7 +591,12 @@ server <- function(input, output, session) {
   })
 
   output$plotDist2 <- renderHighchart({
-    hchart(df %>% filter(Country != "" & Country != "World" & Country != "Europe" & Country != "Asia" & Country != "North America" & Country != "Africa" & Country != "South America" & Country != "Oceania" & TotalDeaths != 0), "scatter", hcaes(Country, TotalDeaths, z = Country, color = TotalDeaths))
+    hchart(
+      df %>% filter(Country != "" & Country != "World" & Country != "Europe" & Country != "Asia" &
+        Country != "North America" & Country != "Africa" & Country != "South America" &
+        Country != "Oceania" & TotalDeaths != 0), "scatter",
+      hcaes(Country, TotalDeaths, z = Country, color = TotalDeaths)
+    )
   })
 
   output$geo2 <-
@@ -628,11 +621,11 @@ server <- function(input, output, session) {
     renderPlotly({
       fig <- plot_geo(dfnoco) %>%
         add_trace(
-          z = ~ get(input$parM),
-          color = input$parM,
+          z = ~ get(input$par_M),
+          color = input$par_M,
           colors = "#e34a33",
           text = ~ paste(
-            Country, "\nSelected parameter:", get(input$parM),
+            Country, "\nSelected parameter:", get(input$par_M),
             "\nNew Cases:", NewCases, "\nTotal Deaths:", TotalDeaths,
             "\nCases per 1M:", Cases_1M, "\nDeaths per 1M:", Deaths_1M
           ),
@@ -704,48 +697,30 @@ server <- function(input, output, session) {
       branchvalues = "remainder"
     )
   })
-  output$plotDD <- renderPlotly({
-    plot_ly(
-      x = df_url2$Date,
-      y = df_url2$`Total deaths cumulative`,
-      width = 1200,
-      height = 550,
-      type = "scatter",
-      mode = "lines",
-      color = "dark green",
-      name = "Total deaths cumulative"
-    ) %>%
-      add_trace(
-        x = df_url2$Date,
-        y = df_url2$`Daily deaths`,
-        type = "scatter",
-        mode = "lines",
-        color = "red",
-        name = "Daily deaths"
-      ) %>%
-      layout(
-        title = "Daily deaths",
-        xaxis = list(title = "Date"),
-        yaxis = list(title = "Count")
-      )
+
+  output$plotDD <- renderHighchart({
+    highchart(type = "stock") %>%
+      hc_xAxis(type = "datetime") %>%
+      hc_add_series(df_url2[, input$var_dd], type = "line", name = paste(input$var_dd)) %>%
+      hc_tooltip(DateFormat = "%d,%m,%Y")
   })
 
   output$plotDens <- renderPlotly({
     ggplotRegression(lm(
       as.formula(paste(
-        input$response, "~", paste(input$paraM, "- Country")
+        input$response, "~", paste(input$paraM1), "- Country", "+", paste(input$paraM2)
       )),
       # as.formula was used in order to allow drop-down menu for predictor variables
       data = subset(
         join2,
-        get(input$paraM) != 0 &
+        get(input$paraM1) != 0 & get(input$paraM2) != 0 &
           get(input$response) != 0 &
           Continent == input$con |
-          input$con == "" & get(input$paraM) != 0 &
+          input$con == "" & get(input$paraM1) != 0 &
             get(input$response) != 0
       ) %>%
         filter(
-          get(input$paraM) < input$num &
+          get(input$paraM1) < input$num &
             get(input$response) < input$num2
         )
     ))
