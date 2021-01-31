@@ -379,7 +379,7 @@ ui <- shinyUI(dashboardPage(
         fluidPage(
           theme = shinytheme("flatly"),
           fluidRow(
-            column(10, titlePanel("PLEASE CHOOSE THE DASHBOARD FROM SIDEBAR MENU"), align = "center")
+            column(10, titlePanel("PLEASE CHOOSE THE DASHBOARD FROM THE SIDEBAR MENU"), align = "center")
           ),
           fluidRow(column(12, plotOutput(outputId = "png"))),
           fluidRow(column(6, titlePanel(h3("Credit: Bojan Makivic, MMSc")), style = "height:0px"))
