@@ -284,20 +284,23 @@ df_con$Tests_1M <- as.numeric(df_con$Tests_1M)
 ggplotRegression <- function(fit) {
   require(ggplot2)
   ggplot(fit$model, aes_string(
-    x = names(fit$model)[2],
     y = names(fit$model)[1],
-    label = names(fit$model)[3]
+    x = names(fit$model)[2],
+    x1 = names(fit$model)[3],
+    label = names(fit$model)[4]
   )) +
     geom_point(na.rm = TRUE) +
-    labs(x = paste(names(fit$model)[2]), y = paste(names(fit$model)[1])) +
+    labs(x = paste(names(fit$model)[2]), x1 = paste(names(fit$model)[3]), y = paste(names(fit$model)[1])) +
     stat_smooth(method = "lm") +
     labs(title = paste(
-      "R2 =",
-      signif(summary(fit)$r.squared, 2),
-      " Slope =",
-      signif(fit$coef[[2]], 2),
-      " P =",
-      signif(summary(fit)$coef[2, 4], 2)
+      "adjusted R2 =",
+      signif(summary(fit)$adj.r.squared, 2),
+      "  |  n :",
+      length(fit[["xlevels"]][["Country"]]),
+      "  |  p value:",
+      signif(glance(fit)$p.value, 4)
+      #" Slope =",
+      #signif(fit$coef[[2]], 2)
     ))
 }
 ```
