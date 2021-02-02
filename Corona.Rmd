@@ -38,6 +38,8 @@ library(spData)
 library(tmap)
 library(rgdal)
 library(highcharter)
+library(xts)
+library(broom)
 ```
 
 ## DATA PREPARATION
@@ -45,23 +47,22 @@ library(highcharter)
 You can also embed plots, for example:
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-# scraping data
+# Scraping data
+
 url <- read_html("https://www.worldometers.info/coronavirus/")
 
 # FIrST DATAFRAME
-# dataframe of first table from url
+
 df <- url %>%
   html_nodes("table") %>%
   .[[1]] %>%
   html_table()
 
-df<- df[-c(1,15,17,18,19)] # remove last three colums
+df <- df[-c(1, 15, 17, 18, 19)] # remove last three colums
 
-# remove special characters from dataframe
-df <- df %>% mutate_all(funs(gsub("[[:punct:]]", "", .))) 
+df <- df %>% mutate_all(funs(gsub("[[:punct:]]", "", .))) # remove special characters from dataframe
 
-# return columns from 3 to 12 as integer
-i <- c(2,3, 4, 5, 6, 7, 8, 9, 10, 11, 12,13)
+i <- c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13) # return columns from 3 to 12 as integer
 df[, i] <-
   apply(df[, i], 2, function(x) {
     as.integer(as.character(x))
@@ -93,39 +94,41 @@ df <- filter(df, !df$Country %in% no[no == "Total"])
 dfnoco$countryCode <-
   countrycode(dfnoco$Country, origin = "country.name", destination = "iso3c")
 
+dfnoco[is.na(dfnoco)] <- 0 # converting NA values into O
 
-# converting NA values into O
-
-dfnoco[is.na(dfnoco)] <- 0
-
-old <- c("CAR", 
-         "Czechia", 
-         "GuineaBissau",
-         "Vatican City",
-         "S Korea", 
-         "UAE",
-         "UK",
-         "USA",
-         "Congo",
-         "DRC",
-         "Saint Kitts and Nevis")
-new <- c("Central African Republic", 
-         "Czech Republic", 
-         "Guinea-Bissau",
-         "Vatican",
-         "South Korea",
-         "United Arab Emirates",
-         "United Kingdom",
-         "United States",
-         "Republic of the Congo",
-         "DR Congo",
-         "Saint Kittis and Nevis")
+old <- c(
+  "CAR",
+  "Czechia",
+  "GuineaBissau",
+  "Vatican City",
+  "S Korea",
+  "UAE",
+  "UK",
+  "USA",
+  "Congo",
+  "DRC",
+  "Saint Kitts and Nevis"
+)
+new <- c(
+  "Central African Republic",
+  "Czech Republic",
+  "Guinea-Bissau",
+  "Vatican",
+  "South Korea",
+  "United Arab Emirates",
+  "United Kingdom",
+  "United States",
+  "Republic of the Congo",
+  "DR Congo",
+  "Saint Kittis and Nevis"
+)
 
 for (i in 1:length(old)) {
-  dfnoco$Country<- gsub(old[i],new[i],dfnoco$Country)
+  dfnoco$Country <- gsub(old[i], new[i], dfnoco$Country)
 }
 
 # SECOND DATAFRAME
+
 url2 <-
   read_html("https://www.worldometers.info/coronavirus/worldwide-graphs/#case-timeline")
 
@@ -141,21 +144,22 @@ names(df_url2)[2:4] <-
     "% increase in daily deaths"
   )
 
-# remove special characters from dataframe
-df_url2 <- df_url2  %>% mutate_all(funs(gsub("[[:punct:]]", "", .))) 
+df_url2 <- df_url2 %>% mutate_all(funs(gsub("[[:punct:]]", "", .)))
 invisible(format(df_url2, justify = "left"))
 df_url2[, 2:4] <-
   apply(df_url2[, 2:4], 2, function(x) {
     as.integer(as.character(x))
-  }) 
+  })
 
+# This has to be done on order taht "highchart" works
+df_url2$Date <- mdy(df_url2$Date) # convert the date to m/d/y
+df_url2$Date <- as.Date(df_url2$Date) # convert to class Date
+df_url2 <- xts(df_url2[2:4], order.by = as.POSIXct(df_url2$Date)) # Order the data frame by date column (date column has to be changed to type as.POSIXct in order to work)
 
-df_url2$Date <- factor(df_url2$Date, levels = df_url2$Date)
-
-# converting NA values into O
-df_url2[is.na(df_url2)] <- 0
+# df_url2[is.na(df_url2)] <- 0
 
 # THIRD DATAFRAME
+
 url3 <-
   read_html("https://www.worldometers.info/world-population/population-by-country/") # Population
 df_url3 <- url3 %>%
@@ -176,8 +180,7 @@ names(df_url3)[1:6] <-
     "Urban_pop"
   )
 
-# return columns from 2 to 6 as integer
-df_url3[, 2:6] <-
+df_url3[, 2:6] <- # return columns from 2 to 6 as integer
   apply(df_url3[, 2:6], 2, function(x) {
     as.integer(as.character(x))
   })
@@ -185,73 +188,84 @@ df_url3$countryCode <-
   countrycode(df_url3$Country, origin = "country.name", destination = "iso3c")
 df_url3[is.na(df_url3)] <- 0
 
-old<- c("GuineaBissau",
-        "Czech Republic Czechia",
-        "Holy See", 
-        "Saint Kittis  Nevis", 
-        "Saint Pierre  Miquelon",
-        "Sao Tome  Principe",
-        "St Vincent  Grenadines",
-        "State of Palestine",
-        "Wallis  Futuna",
-        "Côte dIvoire",
-        "DR Congo\\b",
-        "Congo\\b")
-new<- c("Guinea-Bissau",
-        "Czech Republic",
-        "Vatican",
-        "Saint Kittis and Nevis", 
-        "Saint Pierre Miquelon",
-        "Sao Tome and Principe",
-        "St Vincent Grenadines",
-        "Palestine",
-        "Wallis and Futuna",
-        "Ivory Coast",
-        "DR Congo",
-        "Republic of the Congo")
+old <- c(
+  "GuineaBissau",
+  "Czech Republic Czechia",
+  "Holy See",
+  "Saint Kittis  Nevis",
+  "Saint Pierre  Miquelon",
+  "Sao Tome  Principe",
+  "St Vincent  Grenadines",
+  "State of Palestine",
+  "Wallis  Futuna",
+  "Côte dIvoire",
+  "DR Congo\\b",
+  "Congo\\b"
+)
+new <- c(
+  "Guinea-Bissau",
+  "Czech Republic",
+  "Vatican",
+  "Saint Kittis and Nevis",
+  "Saint Pierre Miquelon",
+  "Sao Tome and Principe",
+  "St Vincent Grenadines",
+  "Palestine",
+  "Wallis and Futuna",
+  "Ivory Coast",
+  "DR Congo",
+  "Republic of the Congo"
+)
+
 for (i in 1:length(old)) {
-  df_url3$Country<- gsub(old[i],new[i],df_url3$Country)
+  df_url3$Country <- gsub(old[i], new[i], df_url3$Country)
 }
 
-# df 4
+# Data frame 4th
+
 k <- c(2, 9, 10)
 df_4 <- world[, k]
 names(df_4)[1] <- c("Country")
 df_4[is.na(df_4)] <- 0
 
-old<- c("eSwatini", 
-        "Dem. Rep. Korea",
-        "Lao PDR", 
-        "Macedonia",
-        "The Gambia",
-        "Timor-Leste",
-        "Russian Federation",
-        "Republic of Korea",
-        "Democratic Republic of the Congo",
-        "Côte d'Ivoire")
-new<- c("Eswatini", 
-        "North Korea",
-        "Laos", 
-        "North Macedonia",
-        "Gambia",
-        "TimorLeste",
-        "Russia",
-        "South Korea",
-        "DR Congo",
-        "Ivory Coast")
+old <- c(
+  "eSwatini",
+  "Dem. Rep. Korea",
+  "Lao PDR",
+  "Macedonia",
+  "The Gambia",
+  "Timor-Leste",
+  "Russian Federation",
+  "Republic of Korea",
+  "Democratic Republic of the Congo",
+  "Côte d'Ivoire"
+)
+new <- c(
+  "Eswatini",
+  "North Korea",
+  "Laos",
+  "North Macedonia",
+  "Gambia",
+  "TimorLeste",
+  "Russia",
+  "South Korea",
+  "DR Congo",
+  "Ivory Coast"
+)
+
 for (i in 1:length(old)) {
-  df_4$Country<- gsub(old[i],new[i],df_4$Country)
+  df_4$Country <- gsub(old[i], new[i], df_4$Country)
 }
 
 join <-
   merge(dfnoco, df_4, by = "Country", all = TRUE) # merge df and df_url3 dataframes in one
-join<- join[c(-15)]
+join <- join[c(-15)]
 join2 <-
   merge(join, df_url3, by = "Country", all = TRUE)
 names(join2)[13] <- c("Tests_1M")
-join2[, c(2:13)] <-
-  apply(join2[, c(2:13)], 2, function(x) {
-    as.integer(as.character(x))
+join2[, c(2:13,15,16)] <-
+  apply(join2[, c(2:13,15,16)], 2, function(x) {
+    as.integer(as.numeric(x))
   })
 
 join2[is.na(join2)] <- 0
@@ -356,17 +370,17 @@ ui <- shinyUI(dashboardPage(
         icon = icon("chart-line")
       ),
       menuSubItem("Total Deaths",
-        tabName = "TotalDeaths", icon =
-          icon("skull")
+                  tabName = "TotalDeaths", icon =
+                    icon("skull")
       ),
       menuSubItem("Box plot",
-        tabName = "Boxplot", icon =
-          icon("box")
+                  tabName = "Boxplot", icon =
+                    icon("box")
       ),
       menuSubItem("SunBurst Graph", tabName = "SunBurst", icon = icon("sun")),
       menuSubItem("Daily deaths",
-        tabName = "DailyDeaths", icon =
-          icon("skull")
+                  tabName = "DailyDeaths", icon =
+                    icon("skull")
       ),
       menuSubItem(
         "Regression analysis",
@@ -382,7 +396,7 @@ ui <- shinyUI(dashboardPage(
         fluidPage(
           theme = shinytheme("flatly"),
           fluidRow(
-            column(10, titlePanel("PLEASE CHOOSE THE DASHBOARD FROM THE SIDEBAR MENU"), align = "center")
+            column(10, titlePanel("PLEASE CHOOSE THE DASHBOARD FROM SIDEBAR MENU"), align = "center")
           ),
           fluidRow(column(12, plotOutput(outputId = "png"))),
           fluidRow(column(6, titlePanel(h3("Credit: Bojan Makivic, MMSc")), style = "height:0px"))
@@ -392,8 +406,8 @@ ui <- shinyUI(dashboardPage(
         tabName = "NewCases",
         fluidPage(
           fluidRow(column(12,
-            h1("New cases of Covid-19 for the current day"),
-            style = "height:130px", align = "center"
+                          h1("New cases of Covid-19 for the current day"),
+                          style = "height:130px", align = "center"
           )),
           fluidRow(column(
             12,
@@ -406,37 +420,37 @@ ui <- shinyUI(dashboardPage(
         fluidPage(
           fluidRow(
             column(6,
-              theme = shinytheme("cerulean"),
-              infoBox("Total cases world wide", df$TotalCases[df$Country == "World"], width = "100%"),
-              icon = icon("chart-line"),
-              infoBoxOutput("infoBox")
+                   theme = shinytheme("cerulean"),
+                   infoBox("Total cases world wide", df$TotalCases[df$Country == "World"], width = "100%"),
+                   icon = icon("chart-line"),
+                   infoBoxOutput("infoBox")
             ),
             column(
               3,
               selectInput("var", "Select continent:",
-                choices =
-                  Co[df$Country[1:6]]
+                          choices =
+                            Co[df$Country[1:6]]
               )
             ),
             column(3, gaugeOutput("table"), style = "height:20px")
           ),
-
+          
           fluidRow(
             column(
               6,
-              selectInput("par_M", "Select variable:", choices = colnames(dfnoco[c(3, 6:10, 13, 14)]))
+              selectInput("par_M", "Select variable:", choices = colnames(join2[c(2:13, 15:16, 18:22)]))
             )
           ),
           fluidRow(column(
             12,
-
+            
             plotlyOutput("geo", width = "100%", height = "100%")
           ))
         )
       ),
       tabItem(
         tabName = "TotalCases2",
-
+        
         fluidPage(
           tmapOutput("geo2", width = "100%", height = 600)
         )
@@ -446,9 +460,9 @@ ui <- shinyUI(dashboardPage(
         fluidPage(
           fluidRow(
             column(4,
-              style = "height:150px",
-              infoBox("Total deaths world", df$TotalDeaths[df$Country == "World"], width = "100%"),
-              icon = icon("chart-line")
+                   style = "height:150px",
+                   infoBox("Total deaths world", df$TotalDeaths[df$Country == "World"], width = "100%"),
+                   icon = icon("chart-line")
             ),
             column(6, h1("Total deaths by country"))
           ),
@@ -462,9 +476,9 @@ ui <- shinyUI(dashboardPage(
         fluidPage(
           fluidRow(
             column(12,
-              align = "center",
-              icon = icon("box"),
-              titlePanel(h1("Boxplot"))
+                   align = "center",
+                   icon = icon("box"),
+                   titlePanel(h1("Boxplot"))
             )
           ),
           fluidRow(column(9), column(
@@ -495,8 +509,8 @@ ui <- shinyUI(dashboardPage(
           left = 250,
           draggable = FALSE,
           selectInput("var1", "Select country:",
-            choices =
-              df$Country
+                      choices =
+                        df$Country
           )
         ),
         absolutePanel(
@@ -528,10 +542,10 @@ ui <- shinyUI(dashboardPage(
             column(
               3,
               numericInput("num",
-                "x-axis cut off:",
-                max = 900000000,
-                min = 0,
-                value = 300000000
+                           "x-axis cut off:",
+                           max = 900000000,
+                           min = 0,
+                           value = 300000000
               ),
               numericInput(
                 "num2",
@@ -542,21 +556,21 @@ ui <- shinyUI(dashboardPage(
               )
             ),
             column(3,
-              offset = 1,
-              selectInput("con", "Select continent:",
-                choices =
-                  join2$Continent[join2$Continent != "0"]
-              ),
-              selectInput("response", "Select response variable:", choices = colnames(join2[c(3:13, 15:16, 18:22, 2)]))
+                   offset = 1,
+                   selectInput("con", "Select continent:",
+                               choices =
+                                 join2$Continent[join2$Continent != "0"]
+                   ),
+                   selectInput("response", "Select response variable:", choices = colnames(join2[c(3:13, 15:16, 18:22, 2)]))
             ),
             column(3,
-              offset = 1,
-              selectInput("paraM1", "Select predictor variable:", choices = colnames(join2[c(2:13, 15:16, 18:22)])),
-              selectInput("paraM2", "Select 2nd predictor variable:", choices = colnames(join2[c(2:13, 15:16, 18:22)]))
+                   offset = 1,
+                   selectInput("paraM1", "Select predictor variable:", choices = colnames(join2[c(2:13, 15:16, 18:22)]), selected = "TotalDeaths"),
+                   selectInput("paraM2", "Select 2nd predictor variable:", choices = colnames(join2[c(2:13, 15:16, 18:22)]))
             ),
             fluidRow(column(12,
-              plotlyOutput("plotDens"),
-              style = "height:10px"
+                            plotlyOutput("plotDens"),
+                            style = "height:10px"
             ))
           )
         )
@@ -584,24 +598,24 @@ server <- function(input, output, session) {
       ) %>%
       hc_xAxis(categories = join2$Country, decreasing = TRUE)
   })
-
+  
   output$Boxplot1 <- renderHighchart({
     dat <- data_to_boxplot(df_con, get(input$Box_par), Continent, add_outliers = FALSE, name = paste(input$Box_par))
-
+    
     highchart() %>%
       hc_xAxis(type = "category") %>%
       hc_add_series_list(dat)
   })
-
+  
   output$plotDist2 <- renderHighchart({
     hchart(
       df %>% filter(Country != "" & Country != "World" & Country != "Europe" & Country != "Asia" &
-        Country != "North America" & Country != "Africa" & Country != "South America" &
-        Country != "Oceania" & TotalDeaths != 0), "scatter",
+                      Country != "North America" & Country != "Africa" & Country != "South America" &
+                      Country != "Oceania" & TotalDeaths != 0), "scatter",
       hcaes(Country, TotalDeaths, z = Country, color = TotalDeaths)
     )
   })
-
+  
   output$geo2 <-
     renderTmap({
       tm_shape(data_full_states) + tm_polygons(
@@ -619,10 +633,10 @@ server <- function(input, output, session) {
         tm_text("countryCode", size = 0.6) +
         tmap_mode("view") + tm_view(set.view = c(7, 51, 2))
     })
-
+  
   output$geo <-
     renderPlotly({
-      fig <- plot_geo(dfnoco) %>%
+      fig <- plot_geo(join2) %>%
         add_trace(
           z = ~ get(input$par_M),
           color = input$par_M,
@@ -634,16 +648,16 @@ server <- function(input, output, session) {
           ),
           hoverinfo = "text",
           hoveron = "fill",
-          locations = dfnoco$countryCode,
+          locations = join2$countryCode,
           marker = list(line = country_line_color)
         ) %>%
         colorbar(title = "Color", tickprefix = "") %>%
         layout(
           title = "World map",
           geo = map_options
-        )
+        ) 
     })
-
+  
   output$table <- renderGauge({
     gauge(
       input$var,
@@ -657,7 +671,7 @@ server <- function(input, output, session) {
       )
     )
   })
-
+  
   output$SunBurst <- renderPlotly({
     plot_ly(
       width = 1170,
@@ -696,22 +710,22 @@ server <- function(input, output, session) {
         sum(df$Deaths_1M[df$Country == input$var1])
       ),
       type = "sunburst",
-
+      
       branchvalues = "remainder"
     )
   })
-
+  
   output$plotDD <- renderHighchart({
     highchart(type = "stock") %>%
       hc_xAxis(type = "datetime") %>%
       hc_add_series(df_url2[, input$var_dd], type = "line", name = paste(input$var_dd)) %>%
       hc_tooltip(DateFormat = "%d,%m,%Y")
   })
-
+  
   output$plotDens <- renderPlotly({
     ggplotRegression(lm(
       as.formula(paste(
-        input$response, "~", paste(input$paraM1), "- Country", "+", paste(input$paraM2)
+        input$response, "~", input$paraM1, "+", input$paraM2, "- Country"
       )),
       # as.formula was used in order to allow drop-down menu for predictor variables
       data = subset(
@@ -720,7 +734,7 @@ server <- function(input, output, session) {
           get(input$response) != 0 &
           Continent == input$con |
           input$con == "" & get(input$paraM1) != 0 &
-            get(input$response) != 0
+          get(input$response) != 0 & get(input$paraM2) != 0
       ) %>%
         filter(
           get(input$paraM1) < input$num &
