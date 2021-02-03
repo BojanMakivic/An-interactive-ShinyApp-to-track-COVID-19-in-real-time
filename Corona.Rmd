@@ -531,13 +531,11 @@ ui <- shinyUI(dashboardPage(
           fluidPage(highchartOutput("plotDD"), width = "100%")
         ))
       ),
-      tabItem(
-        tabName = "Dens",
+      tabItem(tabName = "Dens",
+        navbarPage("Linear regression analysis",
+             tabPanel("LR Plot",
+        
         fluidPage(
-          fluidRow(column(
-            12,
-            titlePanel(h1("Regression analysis", align = "center"))
-          )),
           fluidRow(
             column(
               3,
@@ -574,10 +572,13 @@ ui <- shinyUI(dashboardPage(
             ))
           )
         )
-      )
+      ),
+      tabPanel("Correlation matrix",
+               fluidPage(
+               plotOutput("corrmatrix", height = 520)))
     )
   )
-))
+))))
 ```
 
 
