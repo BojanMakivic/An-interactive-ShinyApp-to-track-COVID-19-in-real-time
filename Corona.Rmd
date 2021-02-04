@@ -492,34 +492,24 @@ ui <- shinyUI(dashboardPage(
       ),
       tabItem(
         tabName = "SunBurst",
-        absolutePanel(
-          top = 40,
-          left = 1100,
-          style = "color: red",
-          titlePanel(
+        fluidPage(fluidRow(column(3,
             h5(
               "Hover with the mouse coursor over the specific parameter, e.g. active cases,
                                                          and click on it in order to reveal an additional information."
             )
           )
-        ),
-        titlePanel(h1("SunBurst graph", align = "center")),
-        absolutePanel(
-          top = 110,
-          left = 250,
-          draggable = FALSE,
+        ,
+        column(6,  offset =2, titlePanel(h1("SunBurst graph")))),
+        fluidRow(column(3,
           selectInput("var1", "Select country:",
                       choices =
-                        df$Country
+                        join2$Country
           )
-        ),
-        absolutePanel(
-          top = 130,
-          left = 180,
-          draggable = FALSE,
-          mainPanel(plotlyOutput("SunBurst"))
+        )),
+        fluidPage(
+          plotlyOutput("SunBurst",width = "100%",height = "600px")
         )
-      ),
+      )),
       tabItem(
         tabName = "DailyDeaths",
         fluidPage(fluidRow(
@@ -675,8 +665,6 @@ server <- function(input, output, session) {
   
   output$SunBurst <- renderPlotly({
     plot_ly(
-      width = 1170,
-      height = 550,
       labels = c(
         "Total Cases",
         "Total Recoverd",
@@ -684,9 +672,9 @@ server <- function(input, output, session) {
         "New Cases",
         "New Deaths",
         "Active Cases",
-        "Serious Critical",
-        "Total Cases per 1M",
-        "Total Deaths per 1M"
+        "Serious Cases",
+        "Cases per 1M",
+        "Deaths per 1M"
       ),
       parents = c(
         "",
@@ -697,7 +685,7 @@ server <- function(input, output, session) {
         "Total Cases",
         "Active Cases",
         "Total Cases",
-        "Total Cases per 1M"
+        "Cases per 1M"
       ),
       values = c(
         sum(df$TotalCases[df$Country == input$var1]),
@@ -726,7 +714,7 @@ server <- function(input, output, session) {
   output$plotDens <- renderPlotly({
     ggplotRegression(lm(
       as.formula(paste(
-        input$response, "~", input$paraM1, "+", input$paraM2, "- Country"
+        input$response, "~", input$paraM1, "- Country", "+", input$paraM2
       )),
       # as.formula was used in order to allow drop-down menu for predictor variables
       data = subset(
@@ -742,6 +730,9 @@ server <- function(input, output, session) {
             get(input$response) < input$num2
         )
     ))
+  })
+  output$corrmatrix <- renderPlot({
+    ggpairs(join2, columns = c(2:13,15,16))
   })
 }
 ```
