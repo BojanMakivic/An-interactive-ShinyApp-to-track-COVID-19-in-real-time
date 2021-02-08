@@ -2,17 +2,6 @@
 title: "Covid ShinyApp"
 author: "Makivic Bojan, MMSc"
 runtime: shiny
-output:
-  flexdashboard::flex_dashboard:
-    favicon: www/favicon.ico
-    includes:
-      in_header: www/meta.html
-    navbar:
-    - href: https://github.com/BojanMakivic/An-interactive-ShinyApp-to-track-COVID-19-in-real-time
-      title: <i class='fab fa-github fa-lg'></i> &nbsp; Credits
-    orientation: columns
-    theme: united
-    vertical_layout: fill
 ---
 
 ```{r setup}
