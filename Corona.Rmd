@@ -188,6 +188,7 @@ df_url3[, 2:6] <- # return columns from 2 to 6 as integer
 df_url3$countryCode <-
   countrycode(df_url3$Country, origin = "country.name", destination = "iso3c")
 df_url3[is.na(df_url3)] <- 0
+df_url3$Country <- gsub("DR Congo", "DR Kongo", df_url3$Country)
 
 old <- c(
   "GuineaBissau",
@@ -200,8 +201,8 @@ old <- c(
   "State of Palestine",
   "Wallis  Futuna",
   "Côte dIvoire",
-  "DR Congo\\b",
-  "Congo\\b"
+  "Congo",
+  "DR Kongo"
 )
 new <- c(
   "Guinea-Bissau",
@@ -214,8 +215,8 @@ new <- c(
   "Palestine",
   "Wallis and Futuna",
   "Ivory Coast",
-  "DR Congo",
-  "Republic of the Congo"
+  "Republic of the Congo",
+  "DR Congo"
 )
 
 for (i in 1:length(old)) {
@@ -260,7 +261,7 @@ for (i in 1:length(old)) {
 
 # Vaccination
 
-vacc <- read.csv("https://raw.githubusercontent.com/BojanMakivic/covid-19-data/master/public/data/vaccinations/vaccinations.csv")
+vacc <- read.csv("https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.csv")
 names(vacc)[1] <- "Country"
 vacc <- vacc[c(3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12)]
 
@@ -268,8 +269,8 @@ vacc$date <- format(as.Date(vacc$date), "%d/%m/%y")
 vacc$date <- strptime(as.character(vacc$date), "%d/%m/%y")
 
 ZoomButton <- data.frame(
-  Unit = c("DD", "DD", "MAX"), multiple = c(10, 15, 1),
-  label = c("10 days", "15 days", "MAX")
+  Unit = c("DD", "DD", "MAX"), multiple = c(7, 14, 1),
+  label = c("7 days", "14 days", "MAX")
 )
 
 # Join data frames
@@ -279,8 +280,8 @@ join <- join[c(-15)]
 join2 <-
   merge(join, df_url3, by = "Country", all = TRUE)
 names(join2)[13] <- c("Tests_1M")
-join2[, c(2:13,15,16)] <-
-  apply(join2[, c(2:13,15,16)], 2, function(x) {
+join2[, c(2:13, 15, 16)] <-
+  apply(join2[, c(2:13, 15, 16)], 2, function(x) {
     as.integer(as.numeric(x))
   })
 
@@ -291,12 +292,12 @@ join2[is.na(join2)] <- 0
 fName <- "TM_WORLD_BORDERS-0.3.shp"
 
 states <- st_read(dsn = fName)
-names(states)[3]<- "countryCode"
+names(states)[3] <- "countryCode"
 
 data_full_states <- states %>%
   left_join(dfnoco, by = "countryCode")
 
-data_full_states <- data_full_states %>% 
+data_full_states <- data_full_states %>%
   left_join(df_url3, by = "countryCode")
 
 ```
@@ -314,14 +315,16 @@ df_con$Tests_1M <- as.numeric(df_con$Tests_1M)
 ggplotRegression <- function(fit) {
   require(ggplot2)
   ggplot(fit$model, aes_string(
+    # colour= names(fit$model)[4],
+    # fill = names(fit$model)[5],
     y = names(fit$model)[1],
     x = names(fit$model)[2],
-    x1 = names(fit$model)[3],
-    label = names(fit$model)[4]
+    s = names(fit$model)[4],
+    label = names(fit$model)[3]
   )) +
     geom_point(na.rm = TRUE) +
-    labs(x = paste(names(fit$model)[2]), x1 = paste(names(fit$model)[3]), y = paste(names(fit$model)[1])) +
-    stat_smooth(method = "lm") +
+    labs(x = paste(names(fit$model)[2]), y = paste(names(fit$model)[1])) +
+    stat_smooth(method = "lm", se = TRUE) +
     labs(title = paste(
       "adjusted R2 =",
       signif(summary(fit)$adj.r.squared, 2),
@@ -329,8 +332,8 @@ ggplotRegression <- function(fit) {
       length(fit[["xlevels"]][["Country"]]),
       "  |  p value:",
       signif(glance(fit)$p.value, 4)
-      #" Slope =",
-      #signif(fit$coef[[2]], 2)
+      # " Slope =",
+      # signif(fit$coef[[2]], 2)
     ))
 }
 ```
@@ -350,11 +353,22 @@ map_options <- list(
 )
 ```
 
+# Dashboard page title
+```
+title <- tags$a("SARS-CoV 2", tags$img(src = "Coronavirus.png", height = "30", width = "30"), style = "color: white;")
+```
 
 ## Define UI 
 ```{r, echo=TRUE}
 ui <- shinyUI(dashboardPage(
-  dashboardHeader(title = "SARS-CoV 2"),
+  dashboardHeader(title = title, tags$li(
+    tags$a(
+      href = "https://github.com/BojanMakivic",
+      tags$img(height = "30px", title = "Credits", src = "PNG/GitHub-Mark-64px.png"),
+      style = "padding-top:10px; padding-bottom:10px;"
+    ),
+    class = "dropdown"
+  )),
   dashboardSidebar(
     sidebarMenu(
       menuItem(
@@ -362,31 +376,32 @@ ui <- shinyUI(dashboardPage(
         tabName = "MainTab",
         icon = icon("dashboard")
       ),
-      menuSubItem(
+      menuItem(
         "Bar chart",
         tabName = "NewCases",
         icon = icon("bar-chart-o")
       ),
-      menuSubItem(
+      menuItem(
         "Map view 1",
         tabName = "TotalCases",
         icon = icon("chart-line")
       ),
-      menuSubItem(
+      menuItem(
         "Map view 2",
         tabName = "TotalCases2",
         icon = icon("chart-line")
       ),
-      menuSubItem("Box plot",
+      menuItem("Box plot",
         tabName = "Boxplot", icon =
           icon("box")
       ),
-      menuSubItem("SunBurst Graph", tabName = "SunBurst", icon = icon("sun")),
+      menuItem("SunBurst Graph", tabName = "SunBurst", icon = icon("sun")),
       menuSubItem("Daily deaths",
         tabName = "DailyDeaths", icon =
           icon("skull")
       ),
-      menuSubItem(
+      menuItem("Vaccination", tabName = "vacc", icon = icon("syringe"), badgeLabel = "new", badgeColor = "green"),
+      menuItem(
         "Regression analysis",
         tabName = "Dens",
         icon = icon("bar-chart-o")
@@ -402,8 +417,8 @@ ui <- shinyUI(dashboardPage(
           fluidRow(
             column(10, titlePanel("PLEASE CHOOSE THE DASHBOARD FROM SIDEBAR MENU"), align = "center")
           ),
-          fluidRow(column(12, plotOutput(outputId = "png"))),
-          fluidRow(column(6, titlePanel(h3("Credit: Bojan Makivic, MMSc")), style = "height:0px"))
+          fluidRow(column(12, img(src = "Coronavirus.png"), align = "center")),
+          fluidRow(column(6, titlePanel(h3("Credit: Bojan Makivic, MMSc")), style = "height:10px"))
         )
       ),
       tabItem(
@@ -471,12 +486,12 @@ ui <- shinyUI(dashboardPage(
               titlePanel(h1("Boxplot"))
             )
           ),
-          fluidRow(column(9), column(
+          fluidRow(column(
             3,
             selectInput("Box_par", "Select variable:", choices = colnames(dfnoco[c(3, 6:10, 13, 14)]))
           )),
           fluidPage(
-            column(12, highchartOutput("Boxplot1"), style = "height:140px")
+            column(12, highchartOutput("Boxplot1", height = "500px"))
           )
         )
       ),
@@ -515,6 +530,21 @@ ui <- shinyUI(dashboardPage(
           column(3, selectInput("var_dd", "Select variable:", choices = colnames(df_url2[c(0:3)]))),
           fluidPage(highchartOutput("plotDD"), width = "100%")
         ))
+      ),
+      tabItem(
+        tabName = "vacc",
+        fluidPage(
+          fluidRow(
+            column(3, selectInput("vacc_par", "Select country:",
+              choices = c(World = "World", vacc$Country), selected = TRUE
+            )),
+            column(
+              3,
+              switchInput("fill", "Fill", value = FALSE)
+            )
+          ),
+          fluidRow(amChartsOutput("vaxx", height = "500px"))
+        )
       ),
       tabItem(
         tabName = "Dens",
@@ -579,11 +609,6 @@ ui <- shinyUI(dashboardPage(
 
 ```{r eruptions, echo=TRUE}
 server <- function(input, output, session) {
-  output$png <- renderPlot({
-    pic <- readPNG("Coronavirus.png")
-    plot.new()
-    grid::grid.raster(pic)
-  })
   output$plotDist <- renderHighchart({
     chart <- highchart() %>%
       hc_chart(type = "column") %>%
@@ -684,15 +709,15 @@ server <- function(input, output, session) {
         "Cases per 1M"
       ),
       values = c(
-        sum(df$TotalCases[df$Country == input$var1]),
-        sum(df$TotalRecovered[df$Country == input$var1]),
-        sum(df$TotalDeaths[df$Country == input$var1]),
-        sum(df$NewCases[df$Country == input$var1]),
-        sum(df$NewDeaths[df$Country == input$var1]),
-        sum(df$ActiveCases[df$Country == input$var1]),
-        sum(df$Serious[df$Country == input$var1]),
-        sum(df$Cases_1M[df$Country == input$var1]),
-        sum(df$Deaths_1M[df$Country == input$var1])
+        sum(join2$TotalCases[join2$Country == input$var1]),
+        sum(join2$TotalRecovered[join2$Country == input$var1]),
+        sum(join2$TotalDeaths[join2$Country == input$var1]),
+        sum(join2$NewCases[join2$Country == input$var1]),
+        sum(join2$NewDeaths[join2$Country == input$var1]),
+        sum(join2$ActiveCases[join2$Country == input$var1]),
+        sum(join2$Serious[join2$Country == input$var1]),
+        sum(join2$Cases_1M[join2$Country == input$var1]),
+        sum(join2$Deaths_1M[join2$Country == input$var1])
       ),
       type = "sunburst",
 
@@ -705,6 +730,26 @@ server <- function(input, output, session) {
       hc_xAxis(type = "datetime") %>%
       hc_add_series(df_url2[, input$var_dd], type = "line", name = paste(input$var_dd)) %>%
       hc_tooltip(DateFormat = "%d,%m,%Y")
+  })
+
+  output$vaxx <- renderAmCharts({
+    vacc %>%
+      subset(vacc$Country == paste(input$vacc_par)) %>%
+      amTimeSeries("date", colnames(vacc)[4:ncol(vacc)],
+        color = c("#eb3b5a", "#2d98da", "#20bf6b", "#4b6584"),
+        type = c(rep("smoothedLine", 2), rep("line", 2)),
+        linetype = c(0, 5, 0, 5),
+        bullet = c(rep("bubble", 2), rep("round", 2)),
+        bulletSize = c(0, 0, 5, 5),
+        linewidth = c(4, 4, 1, 1),
+        fillAlphas = if (input$fill == TRUE) {
+          1
+        } else {
+          0
+        },
+        ZoomButton = ZoomButton,
+        scrollbar = F
+      )
   })
 
   output$plotDens <- renderPlotly({
