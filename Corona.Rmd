@@ -355,13 +355,13 @@ map_options <- list(
 
 # Dashboard page title
 ```
-title <- tags$a("SARS-CoV 2", tags$img(src = "Coronavirus.png", height = "30", width = "30"), style = "color: white;")
+#title <- tags$a("SARS-CoV 2", tags$img(src = "Coronavirus.png", height = "30", width = "30"), style = "color: white;")
 ```
 
 ## Define UI 
 ```{r, echo=TRUE}
 ui <- shinyUI(dashboardPage(
-  dashboardHeader(title = title, tags$li(
+  dashboardHeader(title = "SARS-CoV 2", tags$li(
     tags$a(
       href = "https://github.com/BojanMakivic",
       tags$img(height = "30px", title = "Credits", src = "PNG/GitHub-Mark-64px.png"),
