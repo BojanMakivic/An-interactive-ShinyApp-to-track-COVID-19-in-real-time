@@ -43,6 +43,7 @@ library(highcharter)
 library(xts)
 library(broom)
 library(rAmCharts)
+library(GGally)
 ```
 
 ## DATA PREPARATION
