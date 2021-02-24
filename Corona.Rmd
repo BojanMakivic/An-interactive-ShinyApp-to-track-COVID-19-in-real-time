@@ -367,7 +367,7 @@ ui <- shinyUI(dashboardPage(
   dashboardHeader(title = "SARS-CoV 2", tags$li(
     tags$a(
       href = "https://github.com/BojanMakivic",
-      tags$img(height = "30px", title = "Credits", src = "PNG/GitHub-Mark-64px.png"),
+      tags$img(height = "30px", title = "View on Github", src = "PNG/GitHub-Mark-64px.png"),
       style = "padding-top:10px; padding-bottom:10px;"
     ),
     class = "dropdown"
