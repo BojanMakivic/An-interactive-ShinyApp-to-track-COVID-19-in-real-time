@@ -491,7 +491,7 @@ ui <- shinyUI(dashboardPage(
           ),
           fluidRow(column(
             3,
-            selectInput("Box_par", "Select variable:", choices = colnames(dfnoco[c(3, 6:10, 13, 14)]))
+            selectInput("Box_par", "Select variable:", choices = colnames(dfnoco[c(2:13)]))
           )),
           fluidPage(
             column(12, highchartOutput("Boxplot1", height = "500px"))
