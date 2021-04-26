@@ -66,7 +66,7 @@ df <- df[-c(1, 15, 17, 18, 19)] # remove last three colums
 
 df <- df %>% mutate_all(funs(gsub("[[:punct:]]", "", .))) # remove special characters from dataframe
 
-i <- c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13) # return columns from 3 to 12 as integer
+i <- c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,15,16,17) # return columns from 3 to 12 as integer
 df[, i] <-
   apply(df[, i], 2, function(x) {
     as.integer(as.character(x))
@@ -98,7 +98,7 @@ df <- filter(df, !df$Country %in% no[no == "Total"])
 dfnoco$countryCode <-
   countrycode(dfnoco$Country, origin = "country.name", destination = "iso3c")
 
-dfnoco[is.na(dfnoco)] <- 0 # converting NA values into O
+if(is.numeric(dfnoco)){dfnoco[is.na(dfnoco)] <- 0} # converting NA values into O
 
 old <- c(
   "CAR",
@@ -190,7 +190,7 @@ df_url3[, 2:6] <- # return columns from 2 to 6 as integer
   })
 df_url3$countryCode <-
   countrycode(df_url3$Country, origin = "country.name", destination = "iso3c")
-df_url3[is.na(df_url3)] <- 0
+if(is.numeric(df_url3)){df_url3[is.na(df_url3)] <- 0}
 df_url3$Country <- gsub("DR Congo", "DR Kongo", df_url3$Country)
 
 old <- c(
