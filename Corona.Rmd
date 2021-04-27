@@ -619,7 +619,7 @@ server <- function(input, output, session) {
       hc_xAxis(categories = dfnoco$Country) %>%
       hc_yAxis(title = list(text = "Cases"))
     hc <- chart %>%
-      hc_add_series(pointWidth = 8, yAxis = 0, name = paste(input$first), data = sort(dfnoco[, input$first], decreasing = TRUE)) %>%
+      hc_add_series(pointWidth = 8, yAxis = 0, name = paste(input$first), data = sort(dfnoco[[input$first]], decreasing = TRUE)) %>%
       hc_plotOptions(column = list(dataLabels = list(enabled = TRUE)))
   })
 
