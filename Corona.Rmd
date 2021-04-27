@@ -281,7 +281,7 @@ join <-
   merge(dfnoco, df_4, by = "Country", all = TRUE) # merge df and df_url3 dataframes in one
 join <- join[c(-15)]
 join2 <-
-  merge(join, df_url3, by = "Country", all = TRUE)
+  merge(join[-c(17)], df_url3, by = "Country", all = TRUE)
 names(join2)[13] <- c("Tests_1M")
 join2[, c(2:13, 15, 16)] <-
   apply(join2[, c(2:13, 15, 16)], 2, function(x) {
