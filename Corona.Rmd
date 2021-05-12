@@ -307,7 +307,7 @@ data_full_states <- data_full_states %>%
 
 ## DF for Box plot
 ```{r}
-df_con<- dfnoco[8:222,]
+df_con<- dfnoco[8:219,]
 df_con$Total_Tests <- as.numeric(df_con$Total_Tests)
 df_con$Tests_1M <- as.numeric(df_con$Tests_1M)
 ```
