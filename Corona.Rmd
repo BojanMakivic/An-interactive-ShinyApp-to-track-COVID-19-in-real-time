@@ -669,7 +669,8 @@ server <- function(input, output, session) {
         colorbar(title = "Color", tickprefix = "") %>%
         layout(
           title = "World map",
-          geo = map_options
+          geo = map_options,
+          paper_bgcolor ='transparent'
         )
     })
 
