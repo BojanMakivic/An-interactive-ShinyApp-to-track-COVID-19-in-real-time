@@ -288,6 +288,11 @@ join2[, c(2:13, 15, 16)] <-
     as.integer(as.numeric(x))
   })
 
+names(join2)[2:8]   <- c("Total cases", "New cases", "Total deaths", "New deaths", "Total recovered","New recovered", "Active cases")
+names(join2)[10:13] <- c("Cases/1M", "Deaths/1M", "Total tests", "Tests/1M")
+names(join2)[15:18] <- c("New deaths/1M", "Active cases/1M", "Life expectancy", "GDP per capita")
+names(join2)[21:24] <- c("Population density","Land area", "Median age", "Urban population")
+
 join2[is.na(join2)] <- 0
 
 # Map view 2
@@ -658,8 +663,8 @@ server <- function(input, output, session) {
           colors = "#e34a33",
           text = ~ paste(
             Country, "\nSelected parameter:", get(input$par_M),
-            "\nNew Cases:", NewCases, "\nTotal Deaths:", TotalDeaths,
-            "\nCases per 1M:", Cases_1M, "\nDeaths per 1M:", Deaths_1M
+            "\nNew Cases:", join2$"New cases", "\nTotal Deaths:", join2$"Total deaths",
+            "\nCases per 1M:", join2$"Cases/1M", "\nDeaths per 1M:", join2$"Deaths/1M"
           ),
           hoverinfo = "text",
           hoveron = "fill",
