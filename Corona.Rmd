@@ -721,15 +721,15 @@ server <- function(input, output, session) {
         "Cases per 1M"
       ),
       values = c(
-        sum(join2$TotalCases[join2$Country == input$var1]),
-        sum(join2$TotalRecovered[join2$Country == input$var1]),
-        sum(join2$TotalDeaths[join2$Country == input$var1]),
-        sum(join2$NewCases[join2$Country == input$var1]),
-        sum(join2$NewDeaths[join2$Country == input$var1]),
-        sum(join2$ActiveCases[join2$Country == input$var1]),
+        sum(join2$"Total cases"[join2$Country == input$var1]),
+        sum(join2$"Total recovered"[join2$Country == input$var1]),
+        sum(join2$"Total deaths"[join2$Country == input$var1]),
+        sum(join2$"New cases"[join2$Country == input$var1]),
+        sum(join2$"New deaths"[join2$Country == input$var1]),
+        sum(join2$"Active cases"[join2$Country == input$var1]),
         sum(join2$Serious[join2$Country == input$var1]),
-        sum(join2$Cases_1M[join2$Country == input$var1]),
-        sum(join2$Deaths_1M[join2$Country == input$var1])
+        sum(join2$"Cases/1M"[join2$Country == input$var1]),
+        sum(join2$"Deaths/1M"[join2$Country == input$var1])
       ),
       type = "sunburst",
 
