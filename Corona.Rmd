@@ -646,9 +646,9 @@ server <- function(input, output, session) {
         palette = "YlGnBu", breaks = c(0, 20, 50, 100, 150, 200, 400, 600, 800, 1000, 2000, 5000, 10000, 20000, 30000), contrast = 1.1, title = "Population density",
         popup.vars = c(
           "Population density/km2 :" = "Pop_density",
-          "Total recovered :" = "TotalRecovered",
-          "New recovered :" = "NewRecovered",
-          "Active cases : " = "ActiveCases",
+          "Total recovered :" = "Total recovered",
+          "New recovered :" = "New recovered",
+          "Active cases : " = "Active cases",
           "Serious cases :" = "Serious"
         ), id = "NAME"
       ) +
