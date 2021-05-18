@@ -131,6 +131,9 @@ for (i in 1:length(old)) {
   dfnoco$Country <- gsub(old[i], new[i], dfnoco$Country)
 }
 
+names(dfnoco)[2:8] <- c("Total cases", "New cases", "Total deaths", "New deaths", "Total recovered","New recovered", "Active cases")
+names(dfnoco)[10:13] <- c("Cases/1M", "Deaths/1M", "Total tests", "Tests/1M")
+
 # SECOND DATAFRAME
 
 url2 <-
@@ -155,7 +158,7 @@ df_url2[, 2:4] <-
     as.integer(as.character(x))
   })
 
-# This has to be done on order taht "highchart" works
+# This has to be done on order that "highchart" works
 df_url2$Date <- mdy(df_url2$Date) # convert the date to m/d/y
 df_url2$Date <- as.Date(df_url2$Date) # convert to class Date
 df_url2 <- xts(df_url2[2:4], order.by = as.POSIXct(df_url2$Date)) # Order the data frame by date column (date column has to be changed to type as.POSIXct in order to work)
@@ -312,9 +315,9 @@ data_full_states <- data_full_states %>%
 
 ## DF for Box plot
 ```{r}
-df_con<- dfnoco[8:219,]
-df_con$Total_Tests <- as.numeric(df_con$Total_Tests)
-df_con$Tests_1M <- as.numeric(df_con$Tests_1M)
+df_con <- dfnoco[8:219, ]
+df_con$"Total tests" <- as.numeric(df_con$"Total tests")
+df_con$"Tests/1M" <- as.numeric(df_con$"Tests/1M")
 ```
 
 
