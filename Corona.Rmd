@@ -759,7 +759,7 @@ server <- function(input, output, session) {
       type = "sunburst",
 
       branchvalues = "remainder"
-    )
+    ) %>% layout(paper_bgcolor ='transparent')
   })
 
   output$plotDD <- renderHighchart({
