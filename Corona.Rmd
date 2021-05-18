@@ -131,6 +131,16 @@ for (i in 1:length(old)) {
   dfnoco$Country <- gsub(old[i], new[i], dfnoco$Country)
 }
 
+# for Regression
+dfnoco2 <- filter(df, !df$Country %in% no)
+dfnoco2$countryCode <-
+  countrycode(dfnoco2$Country, origin = "country.name", destination = "iso3c")
+
+if(is.numeric(dfnoco2)){dfnoco2[is.na(dfnoco2)]<-0} # converting NA values into O
+for (i in 1:length(old)) {
+  dfnoco2$Country <- gsub(old[i], new[i], dfnoco2$Country)
+}
+
 names(dfnoco)[2:8] <- c("Total cases", "New cases", "Total deaths", "New deaths", "Total recovered","New recovered", "Active cases")
 names(dfnoco)[10:13] <- c("Cases/1M", "Deaths/1M", "Total tests", "Tests/1M")
 
@@ -283,6 +293,11 @@ ZoomButton <- data.frame(
 join <-
   merge(dfnoco, df_4, by = "Country", all = TRUE) # merge df and df_url3 dataframes in one
 join <- join[c(-15)]
+
+join_r <- # for Regression
+  merge(dfnoco2, df_4, by = "Country", all = TRUE) # merge df and df_url3 dataframes in one
+join_r <- join_r[c(-15)]
+
 join2 <-
   merge(join[-c(17)], df_url3, by = "Country", all = TRUE)
 names(join2)[13] <- c("Tests_1M")
@@ -290,6 +305,16 @@ join2[, c(2:13, 15, 16)] <-
   apply(join2[, c(2:13, 15, 16)], 2, function(x) {
     as.integer(as.numeric(x))
   })
+
+join3 <- # for Regression
+  merge(join_r[-c(17)], df_url3, by = "Country", all = TRUE)
+names(join3)[13] <- c("Tests_1M")
+join3[, c(2:13, 15, 16)] <-
+  apply(join3[, c(2:13, 15, 16)], 2, function(x) {
+    as.integer(as.numeric(x))
+  })
+
+join3[is.na(join3)] <- 0 # for Regression
 
 names(join2)[2:8]   <- c("Total cases", "New cases", "Total deaths", "New deaths", "Total recovered","New recovered", "Active cases")
 names(join2)[10:13] <- c("Cases/1M", "Deaths/1M", "Total tests", "Tests/1M")
@@ -586,14 +611,14 @@ ui <- shinyUI(dashboardPage(
                   offset = 1,
                   selectInput("con", "Select continent:",
                     choices =
-                      join2$Continent[join2$Continent != "0"]
+                      join3$Continent[join3$Continent != "0"]
                   ),
-                  selectInput("response", "Select response variable:", choices = colnames(join2[c(3:13, 15:16, 18:22, 2)]))
+                  selectInput("response", "Select response variable:", choices = colnames(join3[c(3:13, 15:16, 18:22, 2)]))
                 ),
                 column(3,
                   offset = 1,
-                  selectInput("paraM1", "Select predictor variable:", choices = colnames(join2[c(2:13, 15:16, 18:22)]), selected = "TotalDeaths"),
-                  selectInput("paraM2", "Select 2nd predictor variable:", choices = colnames(join2[c(2:13, 15:16, 18:22)]))
+                  selectInput("paraM1", "Select predictor variable:", choices = colnames(join3[c(2:13, 15:16, 18:22)]), selected = "TotalDeaths"),
+                  selectInput("paraM2", "Select 2nd predictor variable:", choices = colnames(join3[c(2:13, 15:16, 18:22)]))
                 ),
                 fluidRow(column(12,
                   plotlyOutput("plotDens"),
@@ -771,7 +796,7 @@ server <- function(input, output, session) {
       )),
       # as.formula was used in order to allow drop-down menu for predictor variables
       data = subset(
-        join2,
+        join3,
         get(input$paraM1) != 0 & get(input$paraM2) != 0 &
           get(input$response) != 0 &
           Continent == input$con |
