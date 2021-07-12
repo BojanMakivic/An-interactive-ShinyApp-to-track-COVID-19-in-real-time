@@ -48,8 +48,6 @@ library(GGally)
 
 ## DATA PREPARATION
 
-You can also embed plots, for example:
-
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Scraping data
 
@@ -98,7 +96,7 @@ df <- filter(df, !df$Country %in% no[no == "Total"])
 dfnoco$countryCode <-
   countrycode(dfnoco$Country, origin = "country.name", destination = "iso3c")
 
-if(is.numeric(dfnoco)){dfnoco[is.na(dfnoco)] <- 0} # converting NA values into O
+if(is.numeric(dfnoco)){dfnoco[is.na(dfnoco)]<-0} # converting NA values into O
 
 old <- c(
   "CAR",
@@ -144,6 +142,7 @@ for (i in 1:length(old)) {
 names(dfnoco)[2:8] <- c("Total cases", "New cases", "Total deaths", "New deaths", "Total recovered","New recovered", "Active cases")
 names(dfnoco)[10:13] <- c("Cases/1M", "Deaths/1M", "Total tests", "Tests/1M")
 
+
 # SECOND DATAFRAME
 
 url2 <-
@@ -168,7 +167,7 @@ df_url2[, 2:4] <-
     as.integer(as.character(x))
   })
 
-# This has to be done on order that "highchart" works
+# This has to be done on order taht "highchart" works
 df_url2$Date <- mdy(df_url2$Date) # convert the date to m/d/y
 df_url2$Date <- as.Date(df_url2$Date) # convert to class Date
 df_url2 <- xts(df_url2[2:4], order.by = as.POSIXct(df_url2$Date)) # Order the data frame by date column (date column has to be changed to type as.POSIXct in order to work)
@@ -216,7 +215,7 @@ old <- c(
   "St Vincent  Grenadines",
   "State of Palestine",
   "Wallis  Futuna",
-  "Côte dIvoire",
+  "CÃ´te dIvoire",
   "Congo",
   "DR Kongo"
 )
@@ -256,7 +255,7 @@ old <- c(
   "Russian Federation",
   "Republic of Korea",
   "Democratic Republic of the Congo",
-  "Côte d'Ivoire"
+  "CÃ´te d'Ivoire"
 )
 new <- c(
   "Eswatini",
@@ -307,8 +306,8 @@ join2[, c(2:13, 15, 16)] <-
   })
 
 join3 <- # for Regression
-  merge(join_r[-c(17)], df_url3, by = "Country", all = TRUE)
-names(join3)[13] <- c("Tests_1M")
+  merge(join_r[-c(17,20)], df_url3, by = "Country", all = TRUE)
+names(join3)[c(13,15,16)] <- c("Tests_1M", "New_deaths_1M", "Active_cases_1M")
 join3[, c(2:13, 15, 16)] <-
   apply(join3[, c(2:13, 15, 16)], 2, function(x) {
     as.integer(as.numeric(x))
@@ -316,7 +315,7 @@ join3[, c(2:13, 15, 16)] <-
 
 join3[is.na(join3)] <- 0 # for Regression
 
-names(join2)[2:8]   <- c("Total cases", "New cases", "Total deaths", "New deaths", "Total recovered","New recovered", "Active cases")
+names(join2)[2:8] <- c("Total cases", "New cases", "Total deaths", "New deaths", "Total recovered","New recovered", "Active cases")
 names(join2)[10:13] <- c("Cases/1M", "Deaths/1M", "Total tests", "Tests/1M")
 names(join2)[15:18] <- c("New deaths/1M", "Active cases/1M", "Life expectancy", "GDP per capita")
 names(join2)[21:24] <- c("Population density","Land area", "Median age", "Urban population")
@@ -428,13 +427,13 @@ ui <- shinyUI(dashboardPage(
         icon = icon("chart-line")
       ),
       menuItem("Box plot",
-        tabName = "Boxplot", icon =
-          icon("box")
+               tabName = "Boxplot", icon =
+                 icon("box")
       ),
       menuItem("SunBurst Graph", tabName = "SunBurst", icon = icon("sun")),
       menuSubItem("Daily deaths",
-        tabName = "DailyDeaths", icon =
-          icon("skull")
+                  tabName = "DailyDeaths", icon =
+                    icon("skull")
       ),
       menuItem("Vaccination", tabName = "vacc", icon = icon("syringe"), badgeLabel = "new", badgeColor = "green"),
       menuItem(
@@ -451,7 +450,7 @@ ui <- shinyUI(dashboardPage(
         fluidPage(
           theme = shinytheme("flatly"),
           fluidRow(
-            column(10, titlePanel("PLEASE CHOOSE THE DASHBOARD FROM SIDEBAR MENU"), align = "center")
+            column(12, titlePanel("PLEASE CHOOSE THE DASHBOARD FROM SIDEBAR MENU"), align = "center")
           ),
           fluidRow(column(12, img(src = "Coronavirus.png"), align = "center")),
           fluidRow(column(6, titlePanel(h3("Credit: Bojan Makivic, MMSc")), style = "height:10px"))
@@ -461,10 +460,10 @@ ui <- shinyUI(dashboardPage(
         tabName = "NewCases",
         fluidPage(
           fluidRow(column(12,
-            selectInput("first", "Select parameter:",
-              choices = colnames(dfnoco[c(2:13)])
-            ),
-            style = "height:120px"
+                          selectInput("first", "Select parameter:",
+                                      choices = colnames(dfnoco[c(2:13)])
+                          ),
+                          style = "height:120px"
           )),
           fluidRow(column(
             12,
@@ -477,21 +476,21 @@ ui <- shinyUI(dashboardPage(
         fluidPage(
           fluidRow(
             column(6,
-              theme = shinytheme("cerulean"),
-              infoBox("Total cases world wide", df$TotalCases[df$Country == "World"], width = "100%"),
-              icon = icon("chart-line"),
-              infoBoxOutput("infoBox")
+                   theme = shinytheme("cerulean"),
+                   infoBox("Total cases world wide", df$TotalCases[df$Country == "World"], width = "100%"),
+                   icon = icon("chart-line"),
+                   infoBoxOutput("infoBox")
             ),
             column(
               3,
               selectInput("var", "Select continent:",
-                choices =
-                  Co[df$Country[1:6]]
+                          choices =
+                            Co[df$Country[1:6]]
               )
             ),
             column(3, gaugeOutput("table"), style = "height:20px")
           ),
-
+          
           fluidRow(
             column(
               6,
@@ -500,14 +499,14 @@ ui <- shinyUI(dashboardPage(
           ),
           fluidRow(column(
             12,
-
+            
             plotlyOutput("geo", width = "100%", height = "600px")
           ))
         )
       ),
       tabItem(
         tabName = "TotalCases2",
-
+        
         fluidPage(
           tmapOutput("geo2", width = "100%", height = 800)
         )
@@ -517,9 +516,9 @@ ui <- shinyUI(dashboardPage(
         fluidPage(
           fluidRow(
             column(12,
-              align = "center",
-              icon = icon("box"),
-              titlePanel(h1("Boxplot"))
+                   align = "center",
+                   icon = icon("box"),
+                   titlePanel(h1("Boxplot"))
             )
           ),
           fluidRow(column(
@@ -547,8 +546,8 @@ ui <- shinyUI(dashboardPage(
           fluidRow(column(
             3,
             selectInput("var1", "Select country:",
-              choices =
-                join2$Country
+                        choices =
+                          join2$Country
             )
           )),
           fluidPage(
@@ -572,7 +571,7 @@ ui <- shinyUI(dashboardPage(
         fluidPage(
           fluidRow(
             column(3, selectInput("vacc_par", "Select country:",
-              choices = c(World = "World", vacc$Country), selected = TRUE
+                                  choices = c(World = "World", vacc$Country), selected = TRUE
             )),
             column(
               3,
@@ -588,16 +587,16 @@ ui <- shinyUI(dashboardPage(
           "Linear regression analysis",
           tabPanel(
             "LR Plot",
-
+            
             fluidPage(
               fluidRow(
                 column(
                   3,
                   numericInput("num",
-                    "x-axis cut off:",
-                    max = 900000000,
-                    min = 0,
-                    value = 300000000
+                               "x-axis cut off:",
+                               max = 900000000,
+                               min = 0,
+                               value = 300000000
                   ),
                   numericInput(
                     "num2",
@@ -608,21 +607,21 @@ ui <- shinyUI(dashboardPage(
                   )
                 ),
                 column(3,
-                  offset = 1,
-                  selectInput("con", "Select continent:",
-                    choices =
-                      join3$Continent[join3$Continent != "0"]
-                  ),
-                  selectInput("response", "Select response variable:", choices = colnames(join3[c(3:13, 15:16, 18:22, 2)]))
+                       offset = 1,
+                       selectInput("con", "Select continent:",
+                                   choices =
+                                     join3$Continent[join3$Continent != "0"]
+                       ),
+                       selectInput("response", "Select response variable:", choices = colnames(join3[c(3:13, 15:16, 18:22, 2)]))
                 ),
                 column(3,
-                  offset = 1,
-                  selectInput("paraM1", "Select predictor variable:", choices = colnames(join3[c(2:13, 15:16, 18:22)]), selected = "TotalDeaths"),
-                  selectInput("paraM2", "Select 2nd predictor variable:", choices = colnames(join3[c(2:13, 15:16, 18:22)]))
+                       offset = 1,
+                       selectInput("paraM1", "Select predictor variable:", choices = colnames(join3[c(2:13, 15:16, 18:22)]), selected = "TotalDeaths"),
+                       selectInput("paraM2", "Select 2nd predictor variable:", choices = colnames(join3[c(2:13, 15:16, 18:22)]))
                 ),
                 fluidRow(column(12,
-                  plotlyOutput("plotDens"),
-                  style = "height:10px"
+                                plotlyOutput("plotDens"),
+                                style = "height:10px"
                 ))
               )
             )
@@ -655,15 +654,15 @@ server <- function(input, output, session) {
       hc_add_series(pointWidth = 8, yAxis = 0, name = paste(input$first), data = sort(dfnoco[[input$first]], decreasing = TRUE)) %>%
       hc_plotOptions(column = list(dataLabels = list(enabled = TRUE)))
   })
-
+  
   output$Boxplot1 <- renderHighchart({
     dat <- data_to_boxplot(df_con, get(input$Box_par), Continent, add_outliers = FALSE, name = paste(input$Box_par))
-
+    
     highchart() %>%
       hc_xAxis(type = "category") %>%
       hc_add_series_list(dat)
   })
-
+  
   output$geo2 <-
     renderTmap({
       tm_shape(data_full_states) + tm_polygons(
@@ -681,7 +680,7 @@ server <- function(input, output, session) {
         tm_text("countryCode", size = 0.6) +
         tmap_mode("view") + tm_view(set.view = c(7, 51, 2))
     })
-
+  
   output$geo <-
     renderPlotly({
       fig <- plot_geo(join2) %>%
@@ -704,9 +703,9 @@ server <- function(input, output, session) {
           title = "World map",
           geo = map_options,
           paper_bgcolor ='transparent'
-        )
+        ) 
     })
-
+  
   output$table <- renderGauge({
     gauge(
       input$var,
@@ -720,7 +719,7 @@ server <- function(input, output, session) {
       )
     )
   })
-
+  
   output$SunBurst <- renderPlotly({
     plot_ly(
       labels = c(
@@ -757,38 +756,38 @@ server <- function(input, output, session) {
         sum(join2$"Deaths/1M"[join2$Country == input$var1])
       ),
       type = "sunburst",
-
+      
       branchvalues = "remainder"
     ) %>% layout(paper_bgcolor ='transparent')
   })
-
+  
   output$plotDD <- renderHighchart({
     highchart(type = "stock") %>%
       hc_xAxis(type = "datetime") %>%
       hc_add_series(df_url2[, input$var_dd], type = "line", name = paste(input$var_dd)) %>%
       hc_tooltip(DateFormat = "%d,%m,%Y")
   })
-
+  
   output$vaxx <- renderAmCharts({
     vacc %>%
       subset(vacc$Country == paste(input$vacc_par)) %>%
       amTimeSeries("date", colnames(vacc)[4:ncol(vacc)],
-        color = c("#eb3b5a", "#2d98da", "#20bf6b", "#4b6584"),
-        type = c(rep("smoothedLine", 2), rep("line", 2)),
-        linetype = c(0, 5, 0, 5),
-        bullet = c(rep("bubble", 2), rep("round", 2)),
-        bulletSize = c(0, 0, 5, 5),
-        linewidth = c(4, 4, 1, 1),
-        fillAlphas = if (input$fill == TRUE) {
-          1
-        } else {
-          0
-        },
-        ZoomButton = ZoomButton,
-        scrollbar = F
+                   color = c("#eb3b5a", "#2d98da", "#20bf6b", "#4b6584"),
+                   type = c(rep("smoothedLine", 2), rep("line", 2)),
+                   linetype = c(0, 5, 0, 5),
+                   bullet = c(rep("bubble", 2), rep("round", 2)),
+                   bulletSize = c(0, 0, 5, 5),
+                   linewidth = c(4, 4, 1, 1),
+                   fillAlphas = if (input$fill == TRUE) {
+                     1
+                   } else {
+                     0
+                   },
+                   ZoomButton = ZoomButton,
+                   scrollbar = F
       )
   })
-
+  
   output$plotDens <- renderPlotly({
     ggplotRegression(lm(
       as.formula(paste(
@@ -801,7 +800,7 @@ server <- function(input, output, session) {
           get(input$response) != 0 &
           Continent == input$con |
           input$con == "" & get(input$paraM1) != 0 &
-            get(input$response) != 0 & get(input$paraM2) != 0
+          get(input$response) != 0 & get(input$paraM2) != 0
       ) %>%
         filter(
           get(input$paraM1) < input$num &
