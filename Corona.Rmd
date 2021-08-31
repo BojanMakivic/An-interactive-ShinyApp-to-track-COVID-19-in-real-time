@@ -288,6 +288,8 @@ ZoomButton <- data.frame(
   label = c("7 days", "14 days", "MAX")
 )
 
+names(vacc)[2] <- "countryCode"
+
 # Join data frames
 join <-
   merge(dfnoco, df_4, by = "Country", all = TRUE) # merge df and df_url3 dataframes in one
@@ -334,7 +336,11 @@ data_full_states <- states %>%
 
 data_full_states <- data_full_states %>%
   left_join(df_url3, by = "countryCode")
+  
+vaxx_full_geo <- states %>%
+  left_join(vacc, by = "countryCode")
 
+vaxx_full_geo <-vaxx_full_geo %>%  filter(date  >= today() - days(2))
 ```
 
 ## DF for Box plot
@@ -568,6 +574,10 @@ ui <- shinyUI(dashboardPage(
       ),
       tabItem(
         tabName = "vacc",
+        navbarPage(
+          "Vaccination",
+          tabPanel(
+            "Metrics",
         fluidPage(
           fluidRow(
             column(3, selectInput("vacc_par", "Select country:",
@@ -581,6 +591,14 @@ ui <- shinyUI(dashboardPage(
           fluidRow(amChartsOutput("vaxx", height = "500px"))
         )
       ),
+      tabPanel(
+        "Map visual",
+          fluidPage(
+            tmapOutput("geo3", width = "100%", height = 800)
+          )
+        )
+      )
+    ),
       tabItem(
         tabName = "Dens",
         navbarPage(
@@ -788,6 +806,20 @@ server <- function(input, output, session) {
       )
   })
   
+  output$geo3 <-
+    renderTmap({
+      tm_shape(vaxx_full_geo) + tm_polygons(
+        "people_fully_vaccinated_per_hundred",
+        palette = "YlGnBu", breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120), contrast = 1.1, title = "% of popuation vaccinated",
+        popup.vars = c(
+          "% of popuation vaccinated :" = "people_fully_vaccinated_per_hundred"
+        ), id = "NAME"
+      ) +
+        tm_scale_bar(breaks = c(0, 25, 50, 75, 100), text.size = 1 / 2) +
+        tm_text("countryCode", size = 0.6) +
+        tmap_mode("view") + tm_view(set.view = c(7, 51, 2))
+    })
+    
   output$plotDens <- renderPlotly({
     ggplotRegression(lm(
       as.formula(paste(
