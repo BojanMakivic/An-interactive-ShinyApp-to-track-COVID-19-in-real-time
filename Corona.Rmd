@@ -340,7 +340,9 @@ data_full_states <- data_full_states %>%
 vaxx_full_geo <- states %>%
   left_join(vacc, by = "countryCode")
 
-vaxx_full_geo <-vaxx_full_geo %>%  filter(date  >= today() - days(2))
+vaxx_full_geo <-vaxx_full_geo %>%  filter(date <= today() & date >= today() - days(100))
+
+vaxx_full_geo <- vaxx_full_geo  %>% group_by(countryCode) %>%  filter(people_fully_vaccinated_per_hundred==max(people_fully_vaccinated_per_hundred, na.rm=T))
 ```
 
 ## DF for Box plot
@@ -459,7 +461,7 @@ ui <- shinyUI(dashboardPage(
             column(12, titlePanel("PLEASE CHOOSE THE DASHBOARD FROM SIDEBAR MENU"), align = "center")
           ),
           fluidRow(column(12, img(src = "Coronavirus.png"), align = "center")),
-          fluidRow(column(6, titlePanel(h3("Credit: Bojan Makivic, MMSc")), style = "height:10px"))
+          fluidRow(column(6, titlePanel(h3("Credit: Bojan Makivic, MMMSc")), style = "height:10px"))
         )
       ),
       tabItem(
@@ -810,7 +812,7 @@ server <- function(input, output, session) {
     renderTmap({
       tm_shape(vaxx_full_geo) + tm_polygons(
         "people_fully_vaccinated_per_hundred",
-        palette = "YlGnBu", breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120), contrast = 1.1, title = "% of popuation vaccinated",
+        palette = "YlGnBu", breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100), contrast = 1.1, title = "% of popuation vaccinated",
         popup.vars = c(
           "% of popuation vaccinated :" = "people_fully_vaccinated_per_hundred"
         ), id = "NAME"
