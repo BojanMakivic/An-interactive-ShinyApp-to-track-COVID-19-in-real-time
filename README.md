@@ -13,3 +13,4 @@ Analysis can be filtered by continent. Predictor and response variables can be a
 # Updates
 
 * Map visual for percentage of vaccinated population worldwide was added (31.08.2021).
+* Log transform for response and all predictor variables was integrated in regression model (30.09.2021).
