@@ -612,7 +612,7 @@ ui <- shinyUI(dashboardPage(
             fluidPage(
               fluidRow(
                 column(
-                  3,
+                  2,
                   numericInput("num",
                     "x-axis cut off:",
                     max = 900000000,
@@ -627,7 +627,7 @@ ui <- shinyUI(dashboardPage(
                     value = 300000000
                   )
                 ),
-                column(3,
+                column(2,
                   offset = 1,
                   selectInput("con", "Select continent:",
                     choices =
@@ -635,15 +635,24 @@ ui <- shinyUI(dashboardPage(
                   ),
                   selectInput("response", "Select response variable:", choices = colnames(join3[c(3:13, 15:16, 18:22, 2)]))
                 ),
-                column(3,
+                column(1,
+                  offset = 1,
+                  checkboxInput("LogX", "Log response", FALSE)
+                ),
+                column(2,
                   offset = 1,
                   selectInput("paraM1", "Select predictor variable:", choices = colnames(join3[c(2:13, 15:16, 18:22)]), selected = "TotalDeaths"),
                   selectInput("paraM2", "Select 2nd predictor variable:", choices = colnames(join3[c(2:13, 15:16, 18:22)]))
                 ),
+                column(1,
+                  offset = 1,
+                  checkboxInput("LogY1", "Log 1st", FALSE),
+                  checkboxInput("LogY2", "Log 2nd", FALSE)
+                ),
                 fluidRow(column(12,
                   plotlyOutput("plotDens"),
                   style = "height:10px"
-                ))
+                )),
               )
             )
           ),
@@ -824,13 +833,29 @@ server <- function(input, output, session) {
     })
 
   output$plotDens <- renderPlotly({
+    data_new <- join3
+    data_new[, input$response] <- if (isTRUE(input$LogX)) {
+      log1p(data_new[input$response])
+    } else {
+      data_new[, input$response]
+    }
+    data_new[, input$paraM1] <- if (isTRUE(input$LogY1)) {
+      log1p(data_new[, input$paraM1])
+    } else {
+      data_new[, input$paraM1]
+    }
+    data_new[, input$paraM2] <- if (isTRUE(input$LogY2)) {
+      log1p(data_new[, input$paraM2])
+    } else {
+      data_new[, input$paraM2]
+    }
     ggplotRegression(lm(
       as.formula(paste(
         input$response, "~", input$paraM1, "- Country", "+", input$paraM2
       )),
       # as.formula was used in order to allow drop-down menu for predictor variables
       data = subset(
-        join3,
+        data_new,
         get(input$paraM1) != 0 & get(input$paraM2) != 0 &
           get(input$response) != 0 &
           Continent == input$con |
@@ -840,7 +865,7 @@ server <- function(input, output, session) {
         filter(
           get(input$paraM1) < input$num &
             get(input$response) < input$num2
-        )
+        ),
     ))
   })
   output$corrmatrix <- renderPlot({
