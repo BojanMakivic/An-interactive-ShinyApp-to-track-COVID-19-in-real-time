@@ -342,7 +342,7 @@ vaxx_full_geo <- states %>%
 
 vaxx_full_geo <-vaxx_full_geo %>%  filter(date <= today() & date >= today() - days(100))
 
-vaxx_full_geo <- vaxx_full_geo  %>% group_by(countryCode) %>%  filter(people_fully_vaccinated_per_hundred==max(people_fully_vaccinated_per_hundred, na.rm=T))
+vaxx_full_geo <- vaxx_full_geo  %>% group_by(countryCode) %>%  filter(people_vaccinated_per_hundred==max(people_vaccinated_per_hundred, na.rm=T))
 ```
 
 ## DF for Box plot
