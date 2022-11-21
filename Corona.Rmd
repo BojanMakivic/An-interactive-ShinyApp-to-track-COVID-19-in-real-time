@@ -60,7 +60,7 @@ df <- url %>%
   .[[1]] %>%
   html_table()
 
-df <- df[-c(1, 15, 17, 18, 19)] # remove last three colums
+df <- df[-c(1, 15, 17, 18, 19)] # remove last five colums
 
 df <- df %>% mutate_all(funs(gsub("[[:punct:]]", "", .))) # remove special characters from dataframe
 
