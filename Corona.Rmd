@@ -1,6 +1,6 @@
 ---
 title: "Covid ShinyApp"
-author: "Makivic Bojan, MMSc"
+author: "Makivic Bojan, MMMSc"
 runtime: shiny
 ---
 
